@@ -1,0 +1,67 @@
+service: itau-piloto-unauthorized-proxy
+plugins:
+  - serverless-offline
+
+custom:
+  app_stage: ${opt:stage, self:provider.stage}
+  context: itau-piloto
+  project: front-proxy
+  prefix: ${self:custom.context}-${opt:stage, self:provider.stage}-${self:custom.project}
+  app_environment:
+    STAGE:
+      dev: "DEV"
+      prod: "PRO"
+    LOAD_BALANCER:
+      dev: "http://itau-piloto-dev-lb-1028646227.us-east-1.elb.amazonaws.com/"
+      prod: "http://itau-piloto-prod-lb-951432254.us-east-1.elb.amazonaws.com/"
+    DATABASE_HOST:
+      dev: terraform-20210301145629505000000001.cvz3h84hmsou.us-east-1.rds.amazonaws.com
+      prod: terraform-20210510012146744600000001.cvz3h84hmsou.us-east-1.rds.amazonaws.com
+    DATABASE_NAME:
+      dev: ubank_dev_database
+      prod: ubank_dev_database
+    DATABASE_PASSWORD:
+      dev: ubankpassword
+      prod: ubankpassword
+    DATABASE_USER:
+      dev: ubank_user
+      prod: ubank_user
+    SG_ID:
+      dev: sg-080901d01934024bb
+      prod: sg-06513e65d52198490
+    SN_ID_1:
+      dev: subnet-02321e55b023ed656
+      prod: subnet-006b1cc3a61fef0c7
+    SN_ID_2:
+      dev: subnet-0cac103d242b264c5
+      prod: subnet-0a709d27d48fc59e1
+
+provider:
+  name: aws
+  role: arn:aws:iam::155908784671:role/ec2_role
+  runtime: nodejs12.x
+  timeout: 600
+  environment:
+    LOAD_BALANCER: ${self:custom.app_environment.LOAD_BALANCER.${self:custom.app_stage}}
+    DATABASE_HOST: ${self:custom.app_environment.DATABASE_HOST.${self:custom.app_stage}}
+    DATABASE_NAME: ${self:custom.app_environment.DATABASE_NAME.${self:custom.app_stage}}
+    DATABASE_PASSWORD: ${self:custom.app_environment.DATABASE_PASSWORD.${self:custom.app_stage}}
+    SG_ID: ${self:custom.app_environment.SG_ID.${self:custom.app_stage}}
+    SN_ID_1: ${self:custom.app_environment.SN_ID_1.${self:custom.app_stage}}
+    SN_ID_2: ${self:custom.app_environment.SN_ID_2.${self:custom.app_stage}}
+
+functions:
+  proxy:
+    handler: handler.proxy
+    vpc:
+      securityGroupIds:
+        - ${self:provider.environment.SG_ID}
+      subnetIds:
+        - ${self:provider.environment.SN_ID_1}
+        - ${self:provider.environment.SN_ID_2}
+    events:
+      - http:
+          path: /{any+}
+          method: any
+          cors: true
+          

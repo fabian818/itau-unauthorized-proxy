@@ -1,0 +1,22 @@
+{
+  "name": "test-ec2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "dependencies": {
+    "axios": "^0.18.1",
+    "mysql2": "^1.6.1",
+    "querystring": "^0.2.0",
+    "sequelize": "^4.44.4",
+    "serverless": "^1.83.2",
+    "serverless-offline": "^3.25.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:dev": "sls deploy --aws-profile awspilotos --stage dev",
+    "deploy:prod": "sls deploy --aws-profile awspilotos --stage prod"
+  },
+  "author": "",
+  "license": "ISC"
+}
